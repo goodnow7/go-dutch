@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a2332">
+    <title>Go Dutch - 회비 정산 프로그램</title>
+    <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Go <span>Dutch</span></h1>
+            <p class="subtitle">회비 정산 프로그램</p>
+        </header>
+
+        <!-- 1. 모임 목록 화면 -->
+        <section id="meeting-list-screen" class="screen active">
+            <div class="screen-header">
+                <h2>모임 목록</h2>
+                <div class="header-buttons">
+                    <button id="manage-members-btn" class="btn btn-secondary">회원 관리</button>
+                    <button id="new-meeting-btn" class="btn btn-primary">새 모임 만들기</button>
+                </div>
+            </div>
+            <div id="meetings-container">
+                <p class="empty-message">등록된 모임이 없습니다.</p>
+            </div>
+        </section>
+
+        <!-- 2. 모임 생성 화면 -->
+        <section id="create-meeting-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="back-to-list-btn">← 목록으로</button>
+                <h2>새 모임 만들기</h2>
+            </div>
+            <form id="create-meeting-form">
+                <div class="form-group">
+                    <label for="meeting-name">모임명</label>
+                    <input type="text" id="meeting-name" required placeholder="모임 이름을 입력하세요">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>시작 날짜</label>
+                        <div class="date-input-wrapper">
+                            <div class="date-input-group" data-target="start-date">
+                                <input type="text" class="date-year" placeholder="YYYY" maxlength="4">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-month" placeholder="MM" maxlength="2">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-day" placeholder="DD" maxlength="2">
+                            </div>
+                            <button type="button" class="btn-calendar" data-target="start-date">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            </button>
+                            <input type="date" class="date-picker-hidden" data-target="start-date">
+                        </div>
+                        <input type="hidden" id="start-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>종료 날짜</label>
+                        <div class="date-input-wrapper">
+                            <div class="date-input-group" data-target="end-date">
+                                <input type="text" class="date-year" placeholder="YYYY" maxlength="4">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-month" placeholder="MM" maxlength="2">
+                                <span class="date-separator">/</span>
+                                <input type="text" class="date-day" placeholder="DD" maxlength="2">
+                            </div>
+                            <button type="button" class="btn-calendar" data-target="end-date">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                            </button>
+                            <input type="date" class="date-picker-hidden" data-target="end-date">
+                        </div>
+                        <input type="hidden" id="end-date" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>등록된 회원 선택</label>
+                    <div id="saved-members-container" class="checkbox-group">
+                        <p class="empty-message-small">등록된 회원이 없습니다.</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>새 회원 추가</label>
+                    <div id="new-members-container">
+                    </div>
+                    <div class="member-add-row">
+                        <input type="text" id="new-member-input" placeholder="새 회원 이름 입력">
+                        <button type="button" id="add-member-btn" class="btn btn-secondary">+ 추가</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>선택된 회원</label>
+                    <div id="selected-members-display" class="selected-members">
+                        <p class="empty-message-small">회원을 선택하거나 추가해주세요.</p>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary btn-large">확인</button>
+                </div>
+            </form>
+        </section>
+
+        <!-- 3. 사용 내역 입력/관리 화면 -->
+        <section id="expense-screen" class="screen">
+            <div class="screen-header">
+                <button class="btn btn-back" id="back-to-list-btn-2">← 목록으로</button>
+                <div class="meeting-info">
+                    <h2 id="current-meeting-name">모임명</h2>
+                    <p id="current-meeting-period">기간</p>
+                </div>
+                <button id="edit-meeting-btn" class="btn btn-secondary">모임 수정</button>
+            </div>
+
+            <!-- 사용 내역 입력 폼 -->
+            <div class="expense-form-container">
+                <h3>사용 내역 추가</h3>
+                <form id="expense-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>날짜</label>
+                            <div class="date-input-wrapper">
+                                <div class="date-input-group" data-target="expense-date">
+                                    <input type="text" class="date-year" placeholder="YYYY" maxlength="4">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-month" placeholder="MM" maxlength="2">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-day" placeholder="DD" maxlength="2">
+                                </div>
+                                <button type="button" class="btn-calendar" data-target="expense-date">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </button>
+                                <input type="date" class="date-picker-hidden" data-target="expense-date">
+                            </div>
+                            <input type="hidden" id="expense-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="expense-description">항목명</label>
+                            <input type="text" id="expense-description" required placeholder="예: 저녁식사">
+                        </div>
+                        <div class="form-group">
+                            <label for="expense-amount">금액</label>
+                            <input type="number" id="expense-amount" required placeholder="0" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="expense-paid-by">결제회원</label>
+                            <select id="expense-paid-by" required>
+                                <option value="">선택하세요</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expense-memo">메모</label>
+                            <textarea id="expense-memo" class="memo-textarea" placeholder="메모 (50자 이내)" maxlength="50" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>적용회원</label>
+                            <div id="applied-members-container" class="checkbox-group">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">추가</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- 사용 내역 테이블 -->
+            <div class="expense-table-container">
+                <h3>사용 내역</h3>
+                <div class="table-wrapper">
+                    <table id="expense-table">
+                        <thead>
+                            <tr>
+                                <th>날짜</th>
+                                <th>항목명</th>
+                                <th>금액</th>
+                                <th>결제회원</th>
+                                <th>메모</th>
+                                <th>적용회원</th>
+                                <th>분배금액</th>
+                                <th>작업</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expense-table-body">
+                        </tbody>
+                    </table>
+                </div>
+                <p id="no-expenses-message" class="empty-message">등록된 사용 내역이 없습니다.</p>
+            </div>
+
+            <!-- 4. 정산 요약 섹션 -->
+            <div class="settlement-container">
+                <h3>정산 요약</h3>
+                <div class="table-wrapper">
+                    <table id="settlement-table">
+                        <thead>
+                            <tr>
+                                <th>회원명</th>
+                                <th>결제 총액</th>
+                                <th>적용 총액</th>
+                                <th>정산금액</th>
+                            </tr>
+                        </thead>
+                        <tbody id="settlement-table-body">
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- 검증 정보 -->
+                <div class="verification-container">
+                    <h4>검증 정보</h4>
+                    <div class="verification-row">
+                        <span>건별 금액 총합:</span>
+                        <span id="total-expenses">0원</span>
+                    </div>
+                    <div class="verification-row">
+                        <span>분배금액 총합:</span>
+                        <span id="total-splits">0원</span>
+                    </div>
+                    <div class="verification-row">
+                        <span>일치 여부:</span>
+                        <span id="verification-status" class="status">-</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 모임 수정 모달 -->
+        <div id="edit-meeting-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>모임 수정</h3>
+                    <button class="btn btn-close" id="close-modal-btn">×</button>
+                </div>
+                <form id="edit-meeting-form">
+                    <div class="form-group">
+                        <label for="edit-meeting-name">모임명</label>
+                        <input type="text" id="edit-meeting-name" required>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>시작 날짜</label>
+                            <div class="date-input-wrapper">
+                                <div class="date-input-group" data-target="edit-start-date">
+                                    <input type="text" class="date-year" placeholder="YYYY" maxlength="4">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-month" placeholder="MM" maxlength="2">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-day" placeholder="DD" maxlength="2">
+                                </div>
+                                <button type="button" class="btn-calendar" data-target="edit-start-date">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </button>
+                                <input type="date" class="date-picker-hidden" data-target="edit-start-date">
+                            </div>
+                            <input type="hidden" id="edit-start-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>종료 날짜</label>
+                            <div class="date-input-wrapper">
+                                <div class="date-input-group" data-target="edit-end-date">
+                                    <input type="text" class="date-year" placeholder="YYYY" maxlength="4">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-month" placeholder="MM" maxlength="2">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-day" placeholder="DD" maxlength="2">
+                                </div>
+                                <button type="button" class="btn-calendar" data-target="edit-end-date">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </button>
+                                <input type="date" class="date-picker-hidden" data-target="edit-end-date">
+                            </div>
+                            <input type="hidden" id="edit-end-date" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>등록된 회원 선택</label>
+                        <div id="edit-saved-members-container" class="checkbox-group">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>새 회원 추가</label>
+                        <div id="edit-new-members-container">
+                        </div>
+                        <div class="member-add-row">
+                            <input type="text" id="edit-new-member-input" placeholder="새 회원 이름 입력">
+                            <button type="button" id="edit-add-member-btn" class="btn btn-secondary">+ 추가</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>선택된 회원</label>
+                        <div id="edit-selected-members-display" class="selected-members">
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="button" id="delete-meeting-btn" class="btn btn-danger">모임 삭제</button>
+                        <button type="submit" class="btn btn-primary">저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 지출 수정 모달 -->
+        <div id="edit-expense-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>사용 내역 수정</h3>
+                    <button class="btn btn-close" id="close-expense-modal-btn">×</button>
+                </div>
+                <form id="edit-expense-form">
+                    <input type="hidden" id="edit-expense-id">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>날짜</label>
+                            <div class="date-input-wrapper">
+                                <div class="date-input-group" data-target="edit-expense-date">
+                                    <input type="text" class="date-year" placeholder="YYYY" maxlength="4">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-month" placeholder="MM" maxlength="2">
+                                    <span class="date-separator">/</span>
+                                    <input type="text" class="date-day" placeholder="DD" maxlength="2">
+                                </div>
+                                <button type="button" class="btn-calendar" data-target="edit-expense-date">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                                </button>
+                                <input type="date" class="date-picker-hidden" data-target="edit-expense-date">
+                            </div>
+                            <input type="hidden" id="edit-expense-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-expense-description">항목명</label>
+                            <input type="text" id="edit-expense-description" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-expense-amount">금액</label>
+                            <input type="number" id="edit-expense-amount" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit-expense-paid-by">결제회원</label>
+                            <select id="edit-expense-paid-by" required>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="edit-expense-memo">메모</label>
+                            <textarea id="edit-expense-memo" class="memo-textarea" placeholder="메모 (50자 이내)" maxlength="50" rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>적용회원</label>
+                            <div id="edit-applied-members-container" class="checkbox-group">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">저장</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- 회원 관리 모달 -->
+        <div id="manage-members-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>회원 관리</h3>
+                    <button class="btn btn-close" id="close-manage-members-btn">×</button>
+                </div>
+                <div class="form-group">
+                    <label>등록된 회원 목록</label>
+                    <p class="help-text">삭제해도 기존 모임의 회원 정보는 유지됩니다.</p>
+                    <div id="global-members-list" class="member-manage-list">
+                        <p class="empty-message-small">등록된 회원이 없습니다.</p>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>새 회원 추가</label>
+                    <div class="member-add-row">
+                        <input type="text" id="global-new-member-input" placeholder="회원 이름 입력">
+                        <button type="button" id="global-add-member-btn" class="btn btn-secondary">+ 추가</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="./js/app.js"></script>
+</body>
+</html>
