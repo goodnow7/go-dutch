@@ -732,6 +732,61 @@ td.memo {
     border-bottom: 1px solid var(--border-color);
 }
 
+/* Transfer Container */
+.transfer-container {
+    margin-top: 20px;
+    padding: 18px;
+    background-color: var(--bg-input);
+    border-radius: 6px;
+    border: 1px solid var(--border-color);
+}
+
+.transfer-container h4 {
+    margin-bottom: 14px;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.transfer-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    margin-bottom: 8px;
+}
+
+.transfer-item:last-child {
+    margin-bottom: 0;
+}
+
+.transfer-from {
+    color: var(--danger-color);
+    font-weight: 600;
+    min-width: 60px;
+}
+
+.transfer-arrow {
+    color: var(--text-muted);
+    font-size: 1.2rem;
+}
+
+.transfer-to {
+    color: var(--success-color);
+    font-weight: 600;
+    min-width: 60px;
+}
+
+.transfer-amount {
+    margin-left: auto;
+    color: var(--text-bright);
+    font-weight: 700;
+    font-size: 1.05rem;
+}
+
 /* Verification Container */
 .verification-container {
     margin-top: 20px;
@@ -821,6 +876,12 @@ td.memo {
 .modal-header h3 {
     color: var(--text-bright);
     font-size: 1.15rem;
+    flex: 1;
+}
+
+.modal-header .btn-close {
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 /* Meeting Info */
@@ -966,7 +1027,8 @@ td.memo {
         width: 100%;
     }
 
-    .btn-back {
+    .btn-back,
+    .btn-close {
         width: auto;
     }
 
@@ -1060,14 +1122,15 @@ td.memo {
     }
 
     .action-buttons {
-        flex-direction: column;
-        gap: 4px;
+        flex-direction: row;
+        gap: 8px;
     }
 
     .action-buttons .btn {
         width: auto;
-        padding: 4px 8px;
-        font-size: 0.7rem;
+        padding: 6px 12px;
+        font-size: 0.75rem;
+        min-width: 40px;
     }
 
     .checkbox-group {
@@ -1143,6 +1206,34 @@ td.memo {
         font-size: 0.95rem;
         margin-bottom: 14px;
         padding-bottom: 10px;
+    }
+
+    .transfer-container {
+        padding: 14px;
+    }
+
+    .transfer-container h4 {
+        font-size: 0.85rem;
+    }
+
+    .transfer-item {
+        padding: 10px 12px;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+
+    .transfer-from,
+    .transfer-to {
+        min-width: 50px;
+        font-size: 0.9rem;
+    }
+
+    .transfer-arrow {
+        font-size: 1rem;
+    }
+
+    .transfer-amount {
+        font-size: 0.95rem;
     }
 
     .verification-container {

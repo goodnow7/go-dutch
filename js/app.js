@@ -498,13 +498,13 @@ function renderExpenseTable(meeting) {
             '<td>' + escapeHtml(expense.description) + '</td>' +
             '<td class="amount">' + formatCurrency(expense.amount) + '</td>' +
             '<td>' + escapeHtml(expense.paidBy) + '</td>' +
-            '<td class="memo" title="' + escapeHtml(expense.memo || '') + '">' + escapeHtml(expense.memo || '') + '</td>' +
-            '<td>' + expense.appliedTo.map(function(m) { return escapeHtml(m); }).join(', ') + '</td>' +
             '<td class="amount">' + formatCurrency(expense.splitAmount) + '</td>' +
+            '<td>' + expense.appliedTo.map(function(m) { return escapeHtml(m); }).join(', ') + '</td>' +
             '<td><div class="action-buttons">' +
                 '<button class="btn btn-secondary btn-small" onclick="editExpense(\'' + expense.id + '\')">수정</button>' +
                 '<button class="btn btn-danger btn-small" onclick="deleteExpense(\'' + expense.id + '\')">삭제</button>' +
             '</div></td>' +
+            '<td class="memo" title="' + escapeHtml(expense.memo || '') + '">' + escapeHtml(expense.memo || '') + '</td>' +
         '</tr>';
     }).join('');
 }
@@ -552,6 +552,10 @@ function renderSettlement(meeting) {
         '</tr>';
     }).join('');
 
+    // 송금 내역 계산
+    var transfers = calculateTransfers(settlement);
+    renderTransfers(transfers);
+
     document.getElementById('total-expenses').textContent = formatCurrency(totalExpenses);
     document.getElementById('total-splits').textContent = formatCurrency(Math.round(totalSplits));
 
@@ -564,6 +568,73 @@ function renderSettlement(meeting) {
         statusEl.textContent = '✗ 불일치';
         statusEl.className = 'status mismatch';
     }
+}
+
+function calculateTransfers(settlement) {
+    // 채권자(받을 사람)와 채무자(낼 사람) 분리
+    var creditors = [];
+    var debtors = [];
+
+    Object.keys(settlement).forEach(function(member) {
+        var balance = Math.round(settlement[member].balance);
+        if (balance > 0) {
+            creditors.push({ name: member, amount: balance });
+        } else if (balance < 0) {
+            debtors.push({ name: member, amount: -balance });
+        }
+    });
+
+    // 금액 순으로 정렬 (큰 금액 먼저)
+    creditors.sort(function(a, b) { return b.amount - a.amount; });
+    debtors.sort(function(a, b) { return b.amount - a.amount; });
+
+    var transfers = [];
+
+    // 채무자가 채권자에게 송금
+    while (debtors.length > 0 && creditors.length > 0) {
+        var debtor = debtors[0];
+        var creditor = creditors[0];
+
+        var transferAmount = Math.min(debtor.amount, creditor.amount);
+
+        if (transferAmount > 0) {
+            transfers.push({
+                from: debtor.name,
+                to: creditor.name,
+                amount: transferAmount
+            });
+        }
+
+        debtor.amount -= transferAmount;
+        creditor.amount -= transferAmount;
+
+        if (debtor.amount === 0) {
+            debtors.shift();
+        }
+        if (creditor.amount === 0) {
+            creditors.shift();
+        }
+    }
+
+    return transfers;
+}
+
+function renderTransfers(transfers) {
+    var container = document.getElementById('transfer-list');
+
+    if (transfers.length === 0) {
+        container.innerHTML = '<p class="empty-message-small">정산할 내역이 없습니다.</p>';
+        return;
+    }
+
+    container.innerHTML = transfers.map(function(t) {
+        return '<div class="transfer-item">' +
+            '<span class="transfer-from">' + escapeHtml(t.from) + '</span>' +
+            '<span class="transfer-arrow">→</span>' +
+            '<span class="transfer-to">' + escapeHtml(t.to) + '</span>' +
+            '<span class="transfer-amount">' + formatCurrency(t.amount) + '</span>' +
+        '</div>';
+    }).join('');
 }
 
 function addExpense(date, description, amount, memo, paidBy, appliedTo) {
