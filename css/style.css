@@ -211,6 +211,12 @@ h2, h3, h4 {
     color: var(--text-color);
 }
 
+/* Amount Input */
+.amount-input {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
 /* Memo Textarea */
 .memo-textarea {
     width: 100%;

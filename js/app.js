@@ -25,6 +25,52 @@ function formatDate(dateString) {
     });
 }
 
+// 금액 입력 포맷팅 (천단위 콤마)
+function formatAmountInput(value) {
+    // 숫자만 추출
+    var numericValue = value.replace(/[^\d]/g, '');
+    if (numericValue === '') return '';
+    // 천단위 콤마 추가
+    return new Intl.NumberFormat('ko-KR').format(parseInt(numericValue, 10));
+}
+
+// 포맷된 금액에서 숫자만 추출
+function parseAmount(formattedValue) {
+    var numericValue = formattedValue.replace(/[^\d]/g, '');
+    return numericValue === '' ? 0 : parseInt(numericValue, 10);
+}
+
+// 금액 입력 필드 설정
+function setupAmountInput(input) {
+    input.addEventListener('input', function(e) {
+        var cursorPos = this.selectionStart;
+        var oldLength = this.value.length;
+        var oldValue = this.value;
+
+        // 포맷팅 적용
+        this.value = formatAmountInput(this.value);
+
+        // 커서 위치 조정
+        var newLength = this.value.length;
+        var diff = newLength - oldLength;
+        var newCursorPos = cursorPos + diff;
+
+        // 커서가 유효한 범위 내에 있도록 조정
+        if (newCursorPos < 0) newCursorPos = 0;
+        if (newCursorPos > newLength) newCursorPos = newLength;
+
+        this.setSelectionRange(newCursorPos, newCursorPos);
+    });
+
+    // 붙여넣기 시에도 포맷팅 적용
+    input.addEventListener('paste', function(e) {
+        var _this = this;
+        setTimeout(function() {
+            _this.value = formatAmountInput(_this.value);
+        }, 0);
+    });
+}
+
 // 날짜 입력 그룹 설정
 function setupDateInputGroup(group) {
     var yearInput = group.querySelector('.date-year');
@@ -684,7 +730,7 @@ function editExpense(expenseId) {
     document.getElementById('edit-expense-id').value = expense.id;
     setDateInputGroupValue('edit-expense-date', expense.date);
     document.getElementById('edit-expense-description').value = expense.description;
-    document.getElementById('edit-expense-amount').value = expense.amount;
+    document.getElementById('edit-expense-amount').value = formatAmountInput(String(expense.amount));
     document.getElementById('edit-expense-memo').value = expense.memo || '';
 
     var paidBySelect = document.getElementById('edit-expense-paid-by');
@@ -873,6 +919,11 @@ document.addEventListener('DOMContentLoaded', function() {
         setupDateInputGroup(group);
     });
 
+    // 금액 입력 필드 설정
+    document.querySelectorAll('.amount-input').forEach(function(input) {
+        setupAmountInput(input);
+    });
+
     // 달력 버튼 클릭 시 날짜 선택기 열기
     document.querySelectorAll('.btn-calendar').forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -959,7 +1010,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var date = document.getElementById('expense-date').value;
         var description = document.getElementById('expense-description').value.trim();
-        var amount = parseInt(document.getElementById('expense-amount').value);
+        var amount = parseAmount(document.getElementById('expense-amount').value);
         var memo = document.getElementById('expense-memo').value.trim();
         var paidBy = document.getElementById('expense-paid-by').value;
 
@@ -1047,7 +1098,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var expenseId = document.getElementById('edit-expense-id').value;
         var date = document.getElementById('edit-expense-date').value;
         var description = document.getElementById('edit-expense-description').value.trim();
-        var amount = parseInt(document.getElementById('edit-expense-amount').value);
+        var amount = parseAmount(document.getElementById('edit-expense-amount').value);
         var memo = document.getElementById('edit-expense-memo').value.trim();
         var paidBy = document.getElementById('edit-expense-paid-by').value;
 
