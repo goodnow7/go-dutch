@@ -22,7 +22,7 @@
 
         // 헤더 사용자 정보 업데이트
         userInfo.style.display = 'flex';
-        document.getElementById('user-name').textContent = user.name;
+        document.getElementById('user-name').textContent = user.email;
 
         const avatar = document.getElementById('user-avatar');
         if (user.profile_image) {

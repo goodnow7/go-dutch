@@ -170,8 +170,26 @@ header .subtitle {
 .user-info {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+}
+
+.user-identity {
+    display: flex;
+    align-items: center;
     gap: 10px;
-    flex-shrink: 0;
+}
+
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+#logout-btn {
+    padding: 4px 10px;
+    font-size: 0.75rem;
+    white-space: nowrap;
 }
 
 .user-avatar {

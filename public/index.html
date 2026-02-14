@@ -29,12 +29,6 @@
                     </svg>
                     Google로 로그인
                 </a>
-                <a href="/auth/naver" class="btn-social btn-naver">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white">
-                        <path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/>
-                    </svg>
-                    Naver로 로그인
-                </a>
             </div>
         </div>
     </div>
@@ -47,9 +41,13 @@
                     <h1>Go <span>Dutch</span></h1>
                     <p class="subtitle">회비 정산 프로그램</p>
                 </div>
-                <div id="user-info" class="user-info" style="display:none">
+            </div>
+            <div id="user-info" class="user-info" style="display:none">
+                <div class="user-identity">
                     <img id="user-avatar" class="user-avatar" src="" alt="프로필" style="display:none">
                     <span id="user-name" class="user-name"></span>
+                </div>
+                <div class="user-actions">
                     <a id="admin-link" href="/admin.html" class="btn btn-secondary btn-small" style="display:none">관리자</a>
                     <button id="logout-btn" class="btn btn-secondary btn-small">로그아웃</button>
                 </div>
