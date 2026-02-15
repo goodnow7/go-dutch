@@ -102,6 +102,8 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // 라우트 (rate limiting 적용)
+// /auth/me는 페이지 로드마다 호출되는 상태 확인이므로 rate limit 제외
+app.get('/auth/me', (req, res, next) => next());
 app.use('/auth', authLimiter, authRouter);
 app.use('/api', apiLimiter, apiRouter);
 
