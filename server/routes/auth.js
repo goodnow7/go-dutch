@@ -52,7 +52,10 @@ if (process.env.GOOGLE_CLIENT_ID) {
     passport.use(new GoogleStrategy({
         clientID: process.env.GOOGLE_CLIENT_ID,
         clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: (process.env.BASE_URL || 'http://localhost:3000') + '/auth/google/callback'
+        callbackURL: process.env.BASE_URL
+            ? process.env.BASE_URL + '/auth/google/callback'
+            : '/auth/google/callback',
+        proxy: true
     }, (accessToken, refreshToken, profile, done) => {
         try {
             const user = findOrCreateUser(
@@ -74,7 +77,10 @@ if (NaverStrategy && process.env.NAVER_CLIENT_ID) {
     passport.use(new NaverStrategy({
         clientID: process.env.NAVER_CLIENT_ID,
         clientSecret: process.env.NAVER_CLIENT_SECRET,
-        callbackURL: (process.env.BASE_URL || 'http://localhost:3000') + '/auth/naver/callback'
+        callbackURL: process.env.BASE_URL
+            ? process.env.BASE_URL + '/auth/naver/callback'
+            : '/auth/naver/callback',
+        proxy: true
     }, (accessToken, refreshToken, profile, done) => {
         try {
             const email = profile.emails?.[0]?.value || profile._json?.email || '';
@@ -114,7 +120,12 @@ router.get('/naver/callback',
 );
 
 router.post('/logout', (req, res) => {
-    req.logout(() => res.redirect('/'));
+    req.logout(() => {
+        req.session.destroy((err) => {
+            res.clearCookie('gd.sid');
+            res.redirect('/');
+        });
+    });
 });
 
 router.get('/me', (req, res) => {

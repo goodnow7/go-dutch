@@ -4,7 +4,8 @@
       "Bash(npm show:*)",
       "Bash(npm install:*)",
       "Bash(netstat:*)",
-      "Bash(xargs -I{} powershell -Command \"Stop-Process -Id {} -Force -ErrorAction SilentlyContinue\")"
+      "Bash(xargs -I{} powershell -Command \"Stop-Process -Id {} -Force -ErrorAction SilentlyContinue\")",
+      "Bash(timeout 5 node:*)"
     ]
   }
 }

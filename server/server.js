@@ -4,13 +4,21 @@ const express = require('express');
 const session = require('express-session');
 const passport = require('passport');
 const path = require('path');
-const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 
 const authRouter = require('./routes/auth');
 const apiRouter = require('./routes/api');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
+
+// 프로덕션에서 SESSION_SECRET 필수
+if (isProduction && !process.env.SESSION_SECRET) {
+    console.error('ERROR: SESSION_SECRET 환경변수가 설정되지 않았습니다. 프로덕션에서는 필수입니다.');
+    process.exit(1);
+}
 
 // 세션 스토어 설정
 let sessionStore;
@@ -29,24 +37,62 @@ try {
 }
 
 // 프록시 뒤에서 HTTPS 인식 (Cloudflare, nginx 등)
-if (process.env.NODE_ENV === 'production') {
+if (isProduction) {
     app.set('trust proxy', 1);
 }
 
+// 보안 헤더 (helmet)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrcAttr: ["'unsafe-inline'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            imgSrc: ["'self'", "https:", "data:"],
+            connectSrc: ["'self'"],
+            fontSrc: ["'self'"],
+            objectSrc: ["'none'"],
+            frameAncestors: ["'none'"],
+            upgradeInsecureRequests: isProduction ? [] : null,
+        }
+    },
+    crossOriginEmbedderPolicy: false,
+    hsts: isProduction,
+}));
+
+// Rate limiting
+const apiLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15분
+    max: 100,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: '요청이 너무 많습니다. 잠시 후 다시 시도하세요.' }
+});
+
+const authLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { error: '인증 요청이 너무 많습니다. 잠시 후 다시 시도하세요.' }
+});
+
 // 미들웨어
-app.use(cors({ origin: true, credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '1mb' }));
+app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 // 세션
 app.use(session({
     store: sessionStore,
-    secret: process.env.SESSION_SECRET || 'go-dutch-dev-secret',
+    secret: process.env.SESSION_SECRET || 'go-dutch-dev-secret-CHANGE-IN-PRODUCTION',
     resave: false,
     saveUninitialized: false,
+    name: 'gd.sid',
     cookie: {
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'lax' : undefined,
+        secure: isProduction,
+        httpOnly: true,
+        sameSite: 'lax',
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7일
     }
 }));
@@ -55,9 +101,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 라우트
-app.use('/auth', authRouter);
-app.use('/api', apiRouter);
+// 라우트 (rate limiting 적용)
+app.use('/auth', authLimiter, authRouter);
+app.use('/api', apiLimiter, apiRouter);
 
 // 정적 파일
 app.use(express.static(path.join(__dirname, '..', 'public')));
