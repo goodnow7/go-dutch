@@ -100,7 +100,7 @@ if (NaverStrategy && process.env.NAVER_CLIENT_ID) {
 }
 
 // 라우트
-router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
+router.get('/google', passport.authenticate('google', { scope: ['profile', 'email'], prompt: 'select_account' }));
 
 router.get('/google/callback',
     passport.authenticate('google', { failureRedirect: '/?error=auth_failed' }),
